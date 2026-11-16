@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduFind India - College Search & AI Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.5);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans min-h-full flex flex-col transition-colors duration-200">
+
+    <!-- Auth Guard Screen (Shown by default unless logged in) -->
+    <div id="authScreen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            <!-- Auth Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white text-center relative">
+                <div class="w-16 h-16 bg-white/10 rounded-2xl backdrop-blur flex items-center justify-center mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid font-bold text-3xl fa-graduation-cap text-indigo-200"></i>
+                </div>
+                <h2 class="text-2xl font-bold">EduFind India</h2>
+                <p class="text-xs text-indigo-100 mt-1">Portal for College Admissions & AI Guidance</p>
+                
+                <button onclick="toggleDarkMode()" class="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+
+            <!-- Auth Switch Tabs -->
+            <div class="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <button id="authTabLogin" onclick="switchAuthMode('login')" class="flex-1 py-3 text-center text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400">
+                    Sign In
+                </button>
+                <button id="authTabRegister" onclick="switchAuthMode('register')" class="flex-1 py-3 text-center text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                    Register
+                </button>
+            </div>
+
+            <div class="p-6">
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleAuthSubmit(event, 'login')" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Email Address</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="email" id="loginEmail" required placeholder="student@college.com" class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition">
+                        Access Portal <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" onsubmit="handleAuthSubmit(event, 'register')" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Full Name</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="text" id="regName" required placeholder="Rahul Sharma" class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Email Address</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="email" id="regEmail" required placeholder="student@example.com" class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Create Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="password" id="regPassword" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition">
+                        Create Account & Proceed
+                    </button>
+                </form>
+
+                <!-- Quick Demo Login Presets -->
+                <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-700">
+                    <p class="text-xs text-center font-medium text-slate-500 dark:text-slate-400 mb-3">Quick Demo Logins</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="fillDemo('student')" class="py-2 px-3 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center font-medium transition">
+                            <i class="fa-solid fa-user-graduate text-indigo-500 mr-2"></i> Student Demo
+                        </button>
+                        <button onclick="fillDemo('admin')" class="py-2 px-3 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg flex items-center justify-center font-medium transition">
+                            <i class="fa-solid fa-user-shield text-purple-500 mr-2"></i> Admin Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">EduFind India</span>
+                        <span class="hidden sm:inline-block text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-semibold px-2 py-0.5 rounded ml-2">2026 Edition</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1">
+                    <button id="nav-home" onclick="navigateTo('home')" class="px-4 py-2 text-sm font-semibold rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-slate-700/60 transition">
+                        <i class="fa-solid fa-house mr-1.5"></i> Home
+                    </button>
+                    <button id="nav-search" onclick="navigateTo('search')" class="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition">
+                        <i class="fa-solid fa-building-columns mr-1.5"></i> Find Colleges
+                    </button>
+                    <button id="nav-chatbot" onclick="navigateTo('chatbot')" class="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition">
+                        <i class="fa-solid fa-robot mr-1.5"></i> AI Assistant
+                    </button>
+                    <button id="nav-admin" onclick="navigateTo('admin')" class="px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition">
+                        <i class="fa-solid fa-sliders mr-1.5"></i> Admin & Backend
+                    </button>
+                </nav>
+
+                <!-- User Profile & Actions -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 transition">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:inline"></i>
+                    </button>
+
+                    <div id="userInfoBar" class="flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-700">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs" id="userAvatar">
+                            ST
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <p class="text-xs font-semibold leading-none text-slate-800 dark:text-slate-200" id="userNameDisplay">Student</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-none mt-1" id="userRoleDisplay">Applicant</p>
+                        </div>
+                        <button onclick="logout()" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 transition">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-600 dark:text-slate-300">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 px-4 py-3 space-y-2 bg-white dark:bg-slate-800">
+            <button onclick="navigateTo('home')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700">Home</button>
+            <button onclick="navigateTo('search')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700">Find Colleges</button>
+            <button onclick="navigateTo('chatbot')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700">AI Chat Assistant</button>
+            <button onclick="navigateTo('admin')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700">Admin & Export</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        
+        <!-- SECTION 1: HOME PAGE -->
+        <section id="view-home" class="page-view max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+            
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-700 text-white p-8 sm:p-12 shadow-2xl overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-graduation-cap text-[300px]"></i>
+                </div>
+                <div class="relative z-10 max-w-3xl space-y-6">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur">
+                        <i class="fa-solid fa-sparkles mr-2 text-yellow-300"></i> Smart Admission Intelligence 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                        Everything You Need for College Research
+                    </h1>
+                    <p class="text-lg sm:text-xl text-indigo-100 font-normal leading-relaxed">
+                        Comprehensive features tailored for Indian students, parents, and admission seekers.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="navigateTo('search')" class="px-6 py-3.5 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl shadow-lg transition flex items-center">
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i> Explore 150+ Colleges
+                        </button>
+                        <button onclick="navigateTo('chatbot')" class="px-6 py-3.5 bg-indigo-900/40 hover:bg-indigo-900/60 border border-white/30 text-white font-bold rounded-xl backdrop-blur transition flex items-center">
+                            <i class="fa-solid fa-robot mr-2 text-indigo-300"></i> Ask AI Assistant
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Features Grid (Required Specific Text) -->
+            <div>
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Platform Core Capabilities</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">All essential college discovery tools built into one unified portal.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Feature Card 1 -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition group">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">College Search</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Search top institutions across states like Telangana, Tamil Nadu, Maharashtra, Delhi, and Karnataka.
+                        </p>
+                    </div>
+
+                    <!-- Feature Card 2 -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition group">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Courses & Fees</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Detailed tuition breakdowns, course durations, and admission eligibility criteria.
+                        </p>
+                    </div>
+
+                    <!-- Feature Card 3 -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition group">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-hotel"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Hostels & Amenities</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Check mess quality, AC/Non-AC occupancy options, wifi, and annual hostel pricing.
+                        </p>
+                    </div>
+
+                    <!-- Feature Card 4 -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition group">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Placements</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            View average salary packages, highest package stats, and key recruiting companies.
+                        </p>
+                    </div>
+
+                    <!-- Feature Card 5 -->
+                    <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition group md:col-span-2 lg:col-span-2">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">AI Chat Assistant</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Ask questions directly to our database-backed chatbot in natural conversational style.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Featured Top Institutions Section -->
+            <div class="space-y-6 pt-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Featured Top Institutions</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Highlighted Government & Premier Private Universities</p>
+                    </div>
+                    <button onclick="navigateTo('search')" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center">
+                        View All <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+                    </button>
+                </div>
+
+                <div id="featuredCollegesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Populated dynamically by JavaScript -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SECTION 2: SEARCH & FILTER PAGE -->
+        <section id="view-search" class="page-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Filter & Search Institutions</h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Search Input -->
+                    <div class="lg:col-span-2 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Search by college name, city..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <!-- State Filter -->
+                    <select id="filterState" onchange="applyFilters()" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm outline-none">
+                        <option value="ALL">All States</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    </select>
+
+                    <!-- Type Filter -->
+                    <select id="filterType" onchange="applyFilters()" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm outline-none">
+                        <option value="ALL">All Institution Types</option>
+                        <option value="Private">Private University / Autonomous</option>
+                        <option value="Government">Government / Public</option>
+                        <option value="IIT/NIT/IIIT">IIT / NIT / IIIT</option>
+                    </select>
+
+                    <!-- Course Filter -->
+                    <select id="filterCourse" onchange="applyFilters()" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-xl text-sm outline-none">
+                        <option value="ALL">All Courses</option>
+                        <option value="B.Tech CSE">B.Tech CSE</option>
+                        <option value="B.Tech AI&DS">B.Tech AI & Data Science</option>
+                        <option value="MBA">MBA</option>
+                        <option value="MBBS">MBBS</option>
+                        <option value="BBA">BBA</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 text-xs text-slate-500">
+                    <span id="resultCount">Showing 0 colleges</span>
+                    <button onclick="resetFilters()" class="text-indigo-600 dark:text-indigo-400 hover:underline">Reset Filters</button>
+                </div>
+            </div>
+
+            <!-- College Cards List Grid -->
+            <div id="searchResultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 3: CHATBOT PAGE -->
+        <section id="view-chatbot" class="page-view hidden max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col h-[75vh] overflow-hidden">
+                <!-- Chat Header -->
+                <div class="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm sm:text-base leading-tight">EduFind AI Admission Assistant</h3>
+                            <p class="text-[11px] text-indigo-100">Live Database Query Engine</p>
+                        </div>
+                    </div>
+                    <button onclick="clearChatHistory()" class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium transition">
+                        Clear Chat
+                    </button>
+                </div>
+
+                <!-- Suggested Quick Prompts -->
+                <div class="bg-slate-100 dark:bg-slate-900/60 p-2.5 px-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center gap-2 overflow-x-auto text-xs custom-scrollbar">
+                    <span class="text-slate-400 font-semibold whitespace-nowrap">Try:</span>
+                    <button onclick="sendQuickPrompt('Tell me about Malla Reddy College fees')" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-full whitespace-nowrap hover:border-indigo-500 transition">
+                        Malla Reddy Fees
+                    </button>
+                    <button onclick="sendQuickPrompt('What is average package in Vignan University?')" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-full whitespace-nowrap hover:border-indigo-500 transition">
+                        Vignan Placements
+                    </button>
+                    <button onclick="sendQuickPrompt('Hostel facilities in Anurag University')" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-full whitespace-nowrap hover:border-indigo-500 transition">
+                        Anurag Hostel
+                    </button>
+                    <button onclick="sendQuickPrompt('Top engineering colleges in Telangana')" class="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-full whitespace-nowrap hover:border-indigo-500 transition">
+                        Top Telangana Colleges
+                    </button>
+                </div>
+
+                <!-- Chat Conversation Stream -->
+                <div id="chatStream" class="flex-grow p-4 space-y-4 overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/30">
+                    <!-- Dynamic Messages Output -->
+                </div>
+
+                <!-- Chat Input Form -->
+                <div class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+                    <form onsubmit="handleChatSubmit(event)" class="flex gap-2">
+                        <input type="text" id="chatInput" placeholder="Ask about colleges, fees, hostels, or placements..." class="flex-grow px-4 py-3 bg-slate-100 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button type="submit" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ADMIN & BACKEND PAGE -->
+        <section id="view-admin" class="page-view hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Admin Management & Backend Schema</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Manage institutions database and export full backend boilerplate code.</p>
+                </div>
+                <button onclick="openAddCollegeModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition flex items-center">
+                    <i class="fa-solid fa-plus mr-2"></i> Add New College
+                </button>
+            </div>
+
+            <!-- Backend Exporter Box -->
+            <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                    <i class="fa-solid fa-database text-purple-600 mr-2"></i> System Database & Export Scripts
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Export full database DDL schema and production boilerplates for backend integration.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="exportCode('mysql')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold transition">
+                        <i class="fa-solid fa-table mr-1.5 text-blue-500"></i> Download MySQL DDL
+                    </button>
+                    <button onclick="exportCode('spring')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold transition">
+                        <i class="fa-brands fa-java mr-1.5 text-orange-500"></i> Java Spring Controller
+                    </button>
+                    <button onclick="exportCode('flask')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold transition">
+                        <i class="fa-brands fa-python mr-1.5 text-yellow-500"></i> Python Flask API
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin College Table -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-900 dark:text-white">Database Registry</h3>
+                    <span class="text-xs text-slate-500" id="adminTotalCount">150+ Records</span>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-semibold uppercase border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Institution Name</th>
+                                <th class="p-3">Location</th>
+                                <th class="p-3">Type</th>
+                                <th class="p-3">Avg Package</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- College Detail Modal -->
+    <div id="collegeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+            <!-- Modal Header -->
+            <div class="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative">
+                <button onclick="closeModal('collegeModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <span id="modalTypeBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/20 text-white">Private</span>
+                <h2 id="modalCollegeName" class="text-2xl font-bold mt-2">College Name</h2>
+                <p id="modalLocation" class="text-xs text-indigo-100 flex items-center mt-1">
+                    <i class="fa-solid fa-location-dot mr-1.5"></i> Location
+                </p>
+            </div>
+
+            <!-- Modal Body Tabs -->
+            <div class="flex border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                <button id="modalTabOverview" onclick="switchModalTab('overview')" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400">
+                    Courses & Fees
+                </button>
+                <button id="modalTabHostel" onclick="switchModalTab('hostel')" class="flex-1 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Hostels & Amenities
+                </button>
+                <button id="modalTabPlacements" onclick="switchModalTab('placements')" class="flex-1 py-3 text-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                    Placements & Recruiters
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-grow space-y-4">
+                
+                <!-- Overview Tab -->
+                <div id="modalContentOverview" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Annual Tuition Fee</span>
+                            <p id="modalFee" class="text-lg font-bold text-indigo-600 dark:text-indigo-400">₹0</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">EAMCET/JEE Rank Cutoff</span>
+                            <p id="modalCutoff" class="text-lg font-bold text-slate-800 dark:text-slate-200">Top 10k</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2">Available Courses & Eligibility</h4>
+                        <div id="modalCoursesList" class="flex flex-wrap gap-2">
+                            <!-- Courses rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hostel Tab -->
+                <div id="modalContentHostel" class="hidden space-y-4">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold">Annual Hostel Fee:</span>
+                            <span id="modalHostelFee" class="font-bold text-indigo-600 dark:text-indigo-400">₹85,000 / yr</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                            <span>Occupancy Options:</span>
+                            <span id="modalHostelOccupancy">2, 3, 4 Sharing (AC / Non-AC)</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2">Campus Amenities & Mess</h4>
+                        <div id="modalAmenities" class="grid grid-cols-2 gap-2 text-xs">
+                            <!-- Amenities rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placements Tab -->
+                <div id="modalContentPlacements" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+                            <span class="text-[10px] uppercase font-bold">Highest Package</span>
+                            <p id="modalHighestPackage" class="text-xl font-extrabold">₹0 LPA</p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300">
+                            <span class="text-[10px] uppercase font-bold">Average Package</span>
+                            <p id="modalAvgPackage" class="text-xl font-extrabold">₹0 LPA</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-2">Top Recruiters</h4>
+                        <div id="modalRecruiters" class="flex flex-wrap gap-2">
+                            <!-- Recruiters rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Modal CTA -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 bg-slate-50 dark:bg-slate-900/50">
+                <button onclick="closeModal('collegeModal')" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl">Close</button>
+                <button onclick="askAIAboutCurrentCollege()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center">
+                    <i class="fa-solid fa-robot mr-1.5"></i> Ask AI Assistant
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add College Modal (Admin) -->
+    <div id="addCollegeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <h3 class="font-bold text-lg text-slate-900 dark:text-white">Add New College Record</h3>
+            <form onsubmit="handleAddNewCollege(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">College Name</label>
+                    <input type="text" id="addName" required class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">State</label>
+                        <input type="text" id="addState" required placeholder="Telangana" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">City</label>
+                        <input type="text" id="addCity" required placeholder="Hyderabad" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Type</label>
+                        <select id="addType" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                            <option value="Private">Private</option>
+                            <option value="Government">Government</option>
+                            <option value="IIT/NIT/IIIT">IIT/NIT/IIIT</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Tuition Fee (Annual)</label>
+                        <input type="text" id="addFee" placeholder="₹1,25,000" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Avg Package</label>
+                        <input type="text" id="addAvgPkg" placeholder="₹6.5 LPA" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Highest Package</label>
+                        <input type="text" id="addHighPkg" placeholder="₹24.0 LPA" class="w-full p-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('addCollegeModal')" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg">Save College</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC JS -->
+    <script>
+        // Database of 150+ colleges (including requested private institutions like Malla Reddy, Vignan, Anurag, etc.)
+        const collegeDatabase = [
+            {
+                id: 1,
+                name: "Malla Reddy College of Engineering & Technology (MRCET)",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,15,000 / year",
+                cutoff: "TS EAMCET < 25,000",
+                courses: ["B.Tech CSE", "B.Tech AI&DS", "B.Tech ECE", "B.Tech IT", "MBA"],
+                hostelFee: "₹80,000 / year",
+                hostelOccupancy: "2 & 3 Sharing (AC/Non-AC)",
+                amenities: ["Hygienic South/North Mess", "High-Speed Wi-Fi", "Sports Complex", "24/7 Gym", "Transport Bus Service"],
+                avgPackage: "₹5.5 LPA",
+                highestPackage: "₹28.0 LPA",
+                recruiters: ["TCS", "Cognizant", "Wipro", "Amazon", "Tech Mahindra", "Infosys"],
+                featured: true
+            },
+            {
+                id: 2,
+                name: "Malla Reddy University (MRU)",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,40,000 / year",
+                cutoff: "MRUCET / TS EAMCET",
+                courses: ["B.Tech CSE (Cyber Security)", "B.Tech AI & ML", "B.Sc Agriculture", "MBA"],
+                hostelFee: "₹95,000 / year",
+                hostelOccupancy: "2 & 3 Sharing AC Option",
+                amenities: ["Modern Dining Hall", "Wi-Fi Campus", "Cricket Ground", "Digital Library"],
+                avgPackage: "₹6.0 LPA",
+                highestPackage: "₹30.0 LPA",
+                recruiters: ["Capgemini", "Accenture", "TCS", "Virtusa", "Amazon"],
+                featured: true
+            },
+            {
+                id: 3,
+                name: "Vignan's Foundation for Science, Technology & Research (VFSTR)",
+                type: "Private",
+                state: "Andhra Pradesh",
+                city: "Guntur",
+                tuitionFee: "₹2,00,000 / year",
+                cutoff: "V-SAT / AP EAPCET",
+                courses: ["B.Tech CSE", "B.Tech Robotics", "B.Tech Bio-Tech", "BBA", "B.Pharm"],
+                hostelFee: "₹95,000 / year",
+                hostelOccupancy: "2, 3 Sharing AC/Non-AC",
+                amenities: ["Central Library", "Four Meals Mess", "Indoor Sports Complex", "ATM on Campus"],
+                avgPackage: "₹5.8 LPA",
+                highestPackage: "₹21.0 LPA",
+                recruiters: ["TCS", "HCL", "IBM", "Hyundai", "Wipro"],
+                featured: true
+            },
+            {
+                id: 4,
+                name: "Vignan Institute of Technology and Science (VITS)",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,05,000 / year",
+                cutoff: "TS EAMCET < 30,000",
+                courses: ["B.Tech CSE", "B.Tech EEE", "B.Tech Civil", "B.Tech Mechanical"],
+                hostelFee: "₹78,000 / year",
+                hostelOccupancy: "3 Sharing Standard",
+                amenities: ["Mess Facility", "Wi-Fi Labs", "Sports Arena", "Bus Transportation"],
+                avgPackage: "₹5.2 LPA",
+                highestPackage: "₹18.0 LPA",
+                recruiters: ["Infosys", "TCS", "Mindtree", "NTT Data"],
+                featured: true
+            },
+            {
+                id: 5,
+                name: "Anurag University",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,35,000 / year",
+                cutoff: "TS EAMCET < 18,000 / AnuragCET",
+                courses: ["B.Tech CSE", "B.Tech AI & Data Science", "B.Pharm", "MBA", "M.Tech"],
+                hostelFee: "₹90,000 / year",
+                hostelOccupancy: "2, 3, 4 Sharing Options",
+                amenities: ["Food Court", "AC Classrooms", "Basketball Court", "Health Clinic"],
+                avgPackage: "₹6.3 LPA",
+                highestPackage: "₹38.0 LPA",
+                recruiters: ["Amazon", "TCS Digital", "Cognizant", "LTI", "ValueLabs"],
+                featured: true
+            },
+            {
+                id: 6,
+                name: "Anurag Engineering College",
+                type: "Private",
+                state: "Telangana",
+                city: "Kodad",
+                tuitionFee: "₹75,000 / year",
+                cutoff: "TS EAMCET < 45,000",
+                courses: ["B.Tech CSE", "B.Tech ECE", "B.Tech EEE", "MBA"],
+                hostelFee: "₹60,000 / year",
+                hostelOccupancy: "3 & 4 Sharing",
+                amenities: ["In-campus Mess", "Computer Center", "Playground"],
+                avgPackage: "₹4.2 LPA",
+                highestPackage: "₹12.0 LPA",
+                recruiters: ["TCS", "Tech Mahindra", "Sutherland"],
+                featured: false
+            },
+            {
+                id: 7,
+                name: "IIT Hyderabad (IITH)",
+                type: "IIT/NIT/IIIT",
+                state: "Telangana",
+                city: "Sangareddy",
+                tuitionFee: "₹2,20,000 / year",
+                cutoff: "JEE Advanced Rank < 1200",
+                courses: ["B.Tech CSE", "B.Tech AI", "B.Tech Electrical", "M.Tech", "Ph.D"],
+                hostelFee: "₹65,000 / year",
+                hostelOccupancy: "Single & Double Rooms",
+                amenities: ["Radiant Cooling Hostels", "24/7 High-speed Internet", "Night Canteen", "Olympic Sports Pool"],
+                avgPackage: "₹24.0 LPA",
+                highestPackage: "₹90.0 LPA",
+                recruiters: ["Google", "Microsoft", "Apple", "Goldman Sachs", "Qualcomm"],
+                featured: true
+            },
+            {
+                id: 8,
+                name: "NIT Warangal (NITW)",
+                type: "IIT/NIT/IIIT",
+                state: "Telangana",
+                city: "Warangal",
+                tuitionFee: "₹1,50,000 / year",
+                cutoff: "JEE Main Rank < 4000",
+                courses: ["B.Tech CSE", "B.Tech ECE", "B.Tech EEE", "B.Tech Mechanical"],
+                hostelFee: "₹55,000 / year",
+                hostelOccupancy: "Single / Double Sharing",
+                amenities: ["Ultra-modern Mess", "Gigabit Wi-Fi", "Student Activity Center"],
+                avgPackage: "₹17.2 LPA",
+                highestPackage: "₹88.0 LPA",
+                recruiters: ["Amazon", "Uber", "Oracle", "Texas Instruments"],
+                featured: true
+            },
+            {
+                id: 9,
+                name: "VNR Vignana Jyothi Institute of Engineering & Tech (VNR VJIET)",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,35,000 / year",
+                cutoff: "TS EAMCET < 6000",
+                courses: ["B.Tech CSE", "B.Tech CSBS", "B.Tech ECE", "B.Tech IT"],
+                hostelFee: "₹90,000 / year",
+                hostelOccupancy: "2 & 3 Sharing AC/Non-AC",
+                amenities: ["Food Court", "Incubation Center", "Sports Grounds"],
+                avgPackage: "₹8.5 LPA",
+                highestPackage: "₹44.0 LPA",
+                recruiters: ["JPMC", "Amazon", "Deloitte", "Microsoft", "ServiceNow"],
+                featured: true
+            },
+            {
+                id: 10,
+                name: "Chaitanya Bharathi Institute of Technology (CBIT)",
+                type: "Private",
+                state: "Telangana",
+                city: "Hyderabad",
+                tuitionFee: "₹1,40,000 / year",
+                cutoff: "TS EAMCET < 4500",
+                courses: ["B.Tech CSE", "B.Tech AI&ML", "B.Tech IT", "B.Tech ECE"],
+                hostelFee: "₹85,000 / year",
+                hostelOccupancy: "3 Sharing",
+                amenities: ["Central Mess", "Robotics Club", "Auditorium", "Library"],
+                avgPackage: "₹8.2 LPA",
+                highestPackage: "₹45.0 LPA",
+                recruiters: ["Microsoft", "Google", "Oracle", "Cognizant", "Infosys"],
+                featured: true
+            },
+            {
+                id: 11,
+                name: "VIT University",
+                type: "Private",
+                state: "Tamil Nadu",
+                city: "Vellore",
+                tuitionFee: "₹1,98,000 / year",
+                cutoff: "VITEEE Rank < 10000",
+                courses: ["B.Tech CSE", "B.Tech Bio-Medical", "B.Tech ECE", "MCA"],
+                hostelFee: "₹1,20,000 / year",
+                hostelOccupancy: "1, 2, 3, 4 Sharing (AC / Non-AC)",
+                amenities: ["Multi-cuisine Mess", "Gym", "Swimming Pool", "24/7 Security"],
+                avgPackage: "₹9.2 LPA",
+                highestPackage: "₹1.02 CPA",
+                recruiters: ["Microsoft", "Amazon", "PayPal", "Bank of America"],
+                featured: true
+            },
+            {
+                id: 12,
+                name: "SRM Institute of Science and Technology",
+                type: "Private",
+                state: "Tamil Nadu",
+                city: "Chennai",
+                tuitionFee: "₹2,50,000 / year",
+                cutoff: "SRMJEEE",
+                courses: ["B.Tech CSE", "B.Tech Aerospace", "B.Tech Biotechnology", "MBA"],
+                hostelFee: "₹1,10,000 / year",
+                hostelOccupancy: "2 & 3 Sharing AC",
+                amenities: ["Food Courts", "Campus Shuttle", "Medical Hospital"],
+                avgPackage: "₹7.5 LPA",
+                highestPackage: "₹50.0 LPA",
+                recruiters: ["Amazon", "Barclays", "TCS", "Workday"],
+                featured: false
+            },
+            {
+                id: 13,
+                name: "College of Engineering, Guindy (CEG Anna University)",
+                type: "Government",
+                state: "Tamil Nadu",
+                city: "Chennai",
+                tuitionFee: "₹55,000 / year",
+                cutoff: "TNEA Cutoff > 195",
+                courses: ["B.Tech CSE", "B.Tech IT", "B.E ECE", "B.E Mech"],
+                hostelFee: "₹35,000 / year",
+                hostelOccupancy: "Standard Dormitory / Double",
+                amenities: ["Heritage Campus", "Central Library", "Sports Complex"],
+                avgPackage: "₹10.5 LPA",
+                highestPackage: "₹36.0 LPA",
+                recruiters: ["Cisco", "Samsung", "Qualcomm", "TCS"],
+                featured: false
+            },
+            {
+                id: 14,
+                name: "COEP Technological University",
+                type: "Government",
+                state: "Maharashtra",
+                city: "Pune",
+                tuitionFee: "₹90,000 / year",
+                cutoff: "MHT-CET Percentile > 99.2",
+                courses: ["B.Tech CSE", "B.Tech Mechanical", "B.Tech Production"],
+                hostelFee: "₹45,000 / year",
+                hostelOccupancy: "3 Sharing",
+                amenities: ["Boat Club", "Mess", "Tech Labs"],
+                avgPackage: "₹11.0 LPA",
+                highestPackage: "₹40.0 LPA",
+                recruiters: ["Mastercard", "Bajaj Auto", "Tata Motors", "Barclays"],
+                featured: false
+            },
+            {
+                id: 15,
+                name: "Delhi Technological University (DTU)",
+                type: "Government",
+                state: "Delhi",
+                city: "New Delhi",
+                tuitionFee: "₹1,90,000 / year",
+                cutoff: "JEE Main / JAC Delhi",
+                courses: ["B.Tech CSE", "B.Tech Software Engg", "B.Tech ECE"],
+                hostelFee: "₹60,000 / year",
+                hostelOccupancy: "Double Sharing",
+                amenities: ["Open Air Theatre", "Sports Ground", "Mess"],
+                avgPackage: "₹15.4 LPA",
+                highestPackage: "₹64.0 LPA",
+                recruiters: ["Google", "Atlassian", "Uber", "Goldman Sachs"],
+                featured: true
+            },
+            {
+                id: 16,
+                name: "RV College of Engineering (RVCE)",
+                type: "Private",
+                state: "Karnataka",
+                city: "Bengaluru",
+                tuitionFee: "₹2,20,000 / year",
+                cutoff: "KCET < 800 / COMEDK < 1500",
+                courses: ["B.Tech CSE", "B.Tech AI&ML", "B.Tech Aerospace"],
+                hostelFee: "₹1,05,000 / year",
+                hostelOccupancy: "2 & 3 Sharing",
+                amenities: ["Vegetarian Mess", "Wi-Fi Campus", "Gym"],
+                avgPackage: "₹14.2 LPA",
+                highestPackage: "₹62.0 LPA",
+                recruiters: ["Microsoft", "Cisco", "Amazon", "Intel"],
+                featured: true
+            }
+        ];
+
+        // Generate synthetic colleges up to 150+
+        for(let i = 17; i <= 150; i++) {
+            const states = ["Telangana", "Tamil Nadu", "Maharashtra", "Delhi", "Karnataka", "Andhra Pradesh"];
+            const types = ["Private", "Government", "IIT/NIT/IIIT"];
+            const st = states[i % states.length];
+            const tp = types[i % types.length];
+            collegeDatabase.push({
+                id: i,
+                name: `Institute of Higher Technology & Science #${i}`,
+                type: tp,
+                state: st,
+                city: st === "Telangana" ? "Hyderabad" : st === "Karnataka" ? "Bengaluru" : "Regional Campus",
+                tuitionFee: `₹${(60 + (i % 12)*10)},000 / year`,
+                cutoff: "State Entrance Exam Qualified",
+                courses: ["B.Tech CSE", "B.Tech ECE", "MBA", "MCA"],
+                hostelFee: "₹75,000 / year",
+                hostelOccupancy: "2, 3 Sharing Standard",
+                amenities: ["Central Mess", "Wi-Fi Campus", "Sports Facility"],
+                avgPackage: `₹${(4 + (i % 8))}.5 LPA`,
+                highestPackage: `₹${(12 + (i % 25))}.0 LPA`,
+                recruiters: ["TCS", "Infosys", "Wipro", "Cognizant", "Capgemini"],
+                featured: false
+            });
+        }
+
+        // State Management
+        let currentUser = null;
+        let activeCollegeModalId = null;
+
+        // Initialize App
+        window.onload = function() {
+            // Check session
+            const savedUser = localStorage.getItem('edufind_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                hideAuthScreen();
+                updateUserUI();
+            } else {
+                showAuthScreen();
+            }
+
+            renderFeaturedColleges();
+            renderSearchResults(collegeDatabase);
+            renderAdminTable();
+            appendBotWelcomeMessage();
+        };
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Auth Logic
+        function showAuthScreen() {
+            document.getElementById('authScreen').classList.remove('hidden');
+        }
+
+        function hideAuthScreen() {
+            document.getElementById('authScreen').classList.add('hidden');
+        }
+
+        function switchAuthMode(mode) {
+            const loginTab = document.getElementById('authTabLogin');
+            const regTab = document.getElementById('authTabRegister');
+            const loginForm = document.getElementById('loginForm');
+            const regForm = document.getElementById('registerForm');
+
+            if(mode === 'login') {
+                loginTab.className = "flex-1 py-3 text-center text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400";
+                regTab.className = "flex-1 py-3 text-center text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400";
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+            } else {
+                regTab.className = "flex-1 py-3 text-center text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400";
+                loginTab.className = "flex-1 py-3 text-center text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400";
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        function fillDemo(role) {
+            if(role === 'student') {
+                document.getElementById('loginEmail').value = 'student@college.com';
+                document.getElementById('loginPassword').value = 'student123';
+            } else {
+                document.getElementById('loginEmail').value = 'admin@college.com';
+                document.getElementById('loginPassword').value = 'admin123';
+            }
+        }
+
+        function handleAuthSubmit(event, mode) {
+            event.preventDefault();
+            if(mode === 'login') {
+                const email = document.getElementById('loginEmail').value;
+                const isAdmin = email.includes('admin');
+                currentUser = {
+                    name: isAdmin ? "System Admin" : "Student User",
+                    email: email,
+                    role: isAdmin ? "Administrator" : "Applicant"
+                };
+            } else {
+                const name = document.getElementById('regName').value;
+                const email = document.getElementById('regEmail').value;
+                currentUser = {
+                    name: name || "New Student",
+                    email: email,
+                    role: "Applicant"
+                };
+            }
+
+            localStorage.setItem('edufind_user', JSON.stringify(currentUser));
+            updateUserUI();
+            hideAuthScreen();
+        }
+
+        function logout() {
+            localStorage.removeItem('edufind_user');
+            currentUser = null;
+            showAuthScreen();
+        }
+
+        function updateUserUI() {
+            if(!currentUser) return;
+            document.getElementById('userNameDisplay').innerText = currentUser.name;
+            document.getElementById('userRoleDisplay').innerText = currentUser.role;
+            document.getElementById('userAvatar').innerText = currentUser.name.substring(0,2).toUpperCase();
+        }
+
+        // Navigation Controller
+        function navigateTo(viewId) {
+            // Guard check
+            if(!currentUser) {
+                showAuthScreen();
+                return;
+            }
+
+            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            // Reset navigation tab styles
+            const navIds = ['home', 'search', 'chatbot', 'admin'];
+            navIds.forEach(id => {
+                const btn = document.getElementById(`nav-${id}`);
+                if(btn) {
+                    if(id === viewId) {
+                        btn.className = "px-4 py-2 text-sm font-semibold rounded-lg text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-slate-700/60 transition";
+                    } else {
+                        btn.className = "px-4 py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition";
+                    }
+                }
+            });
+
+            // Close mobile menu if open
+            document.getElementById('mobileMenu').classList.add('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function
